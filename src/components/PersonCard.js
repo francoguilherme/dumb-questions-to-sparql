@@ -1,19 +1,88 @@
 import React from 'react';
+import axios from "axios";
 
 class PersonCard extends React.Component {
+
+    birthPlace = this.uncamelize(this.props["dbobirthPlace"]);
+    deathPlace = this.uncamelize(this.props["dbodeathPlace"]);
+    residence = this.uncamelize(this.props["dboresidence"]);
+    almaMater = this.uncamelize(this.props["dboalmaMater"]);
+    spouse = this.uncamelize(this.props["dbospouse"]);
+
+    fetchData = (prop) => {
+        const genericParams = "&property=dbo%3AbirthDate&property=georss:point&pretty=NONE&limit=1&offset=0&key=1234&oldVersion=false";
+        const personParams = "&property=foaf%3Adepiction&property=foaf%3Aname&property=dct%3Adescription&property=dbp%3Anationality&property=dbo%3AbirthDate&property=dbo%3AbirthPlace&property=dbo%3AdeathDate&property=dbo%3AdeathPlace&property=dbo%3AalmaMater&property=dbo%3Aresidence&property=dbo%3Aspouse&pretty=NONE&limit=1&offset=0&key=1234&oldVersion=false";
+        const placeParams = "&property=foaf%3Adepiction&property=foaf%3Aname&property=foaf:nick&property=dbo:populationTotal&property=dbo:city&property=dbo:country&property=dbo:capital&property=georss:point&property=dbo:type&property=dbp:established&pretty=NONE&limit=1&offset=0&key=1234&oldVersion=false";
+
+        let searchParams = '';
+        axios
+            .get("https://recinfo-dbpedia-api.herokuapp.com/api/1.0.0/values?entities=".concat(prop, genericParams),
+                {headers: {"Accept":"application/json"}})
+            .then(response => {
+                const data = response.data.results.bindings[0];
+                if (data["dbobirthDate"] != null) {
+                    searchParams = personParams
+                } else if (data["georsspoint"] != null) {
+                    searchParams = placeParams
+                }
+
+                axios
+                    .get("https://recinfo-dbpedia-api.herokuapp.com/api/1.0.0/values?entities=".concat(prop, searchParams),
+                        {headers: {"Accept":"application/json"}})
+                    .then(response => {
+                        const data = response.data.results.bindings[0];
+                        let entity = {};
+                        for (let param in data) {
+                            entity[param] = data[param].value;
+                        }
+                        this.props.appendEntity(entity);
+                    })
+                    .catch(error => console.log(error));
+            })
+            .catch(error => console.log(error));
+    };
+
+    searchRelated = () => {
+        console.log(this.props);
+        for (let prop in this.props) {
+            if (prop === "foafname" || prop === 'entities'){
+                continue
+            }
+            if (String(this.props[prop]).includes("resource/")) {
+                let newSearch = String(this.props[prop]).split("resource/")[1];
+                this.fetchData(newSearch)
+            }
+        }
+    };
+
+    uncamelize(str) {
+        try {
+            return str.split("resource/")[1].replace(/_/g, " ");
+        } catch (e) {
+            return ''
+        }
+    }
+
     render() {
         return (
-            <div className="card text-white text-left bg-secondary mt-5 mx-auto mb-5" style={{width: "25rem"}}>
-                <img src={this.props.foafdepiction} alt="Depiction" className="card-img-top bg-white"
-                     style={{"objectFit":"cover", "maxHeight":"25rem", "objectPosition":"top"}}/>
-                <div className="card-body">
+            <div className="card text-white text-left bg-secondary mt-5 mx-auto mb-3" style={{width: "20rem"}}>
+                {
+                    this.props.foafdepiction &&
+                    <img src={this.props.foafdepiction} alt="Depiction" className="card-img-top bg-white"
+                     style={{"objectFit":"cover", "maxHeight":"20rem", "objectPosition":"top"}}/>
+                }
+                <div className="card-body" style={{"fontSize":"15px"}}>
                     <h5 className="card-title">{this.props.foafname}</h5>
                     <p className="card-text">{this.props.dctdescription}</p>
                     <p className="card-text">{this.props.dbpnationality}</p>
-                    <p className="card-text">Birth: {this.props.dbobirthDate}, {this.props.dbobirthPlace}</p>
-                    {this.props.dbodeathDate && <p className="card-text">Death: {this.props.dbodeathDate}, {this.props.dbodeathPlace}</p>}
-                    <p className="card-text">Alma Mater: {this.props.dboalmaMater}</p>
-                    <p className="card-text">Spouse: {this.props.dbospouse}</p>
+                    <p className="card-text">Birth: {this.props.dbobirthDate}, {this.birthPlace}</p>
+                    {this.props.dbodeathDate && <p className="card-text">Death: {this.props.dbodeathDate}, {this.deathPlace}</p>}
+                    {this.props.dboresidence && <p className="card-text">Residence: {this.residence}</p>}
+                    {this.props.dboalmaMater && <p className="card-text">Alma Mater: {this.almaMater}</p>}
+                    {this.props.dbospouse && <p className="card-text">Spouse: {this.spouse}</p>}
+                </div>
+                <div className="card-footer">
+                    <button onClick={this.searchRelated} className="btn btn-primary">Search related</button>
                 </div>
             </div>
         );
