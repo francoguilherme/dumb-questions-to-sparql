@@ -1,6 +1,11 @@
 import React from 'react';
 import axios from "axios";
 import './App.css';
+import {Tooltip} from "@material-ui/core";
+import Paper from '@material-ui/core/Paper';
+import InputBase from '@material-ui/core/InputBase';
+import Divider from '@material-ui/core/Divider';
+import IconButton from '@material-ui/core/IconButton';
 import PersonCard from "./components/PersonCard"
 import PlaceCard from "./components/PlaceCard"
 
@@ -19,10 +24,9 @@ class App extends React.Component {
 
     appendEntity = (entity) => {
         let list = this.state.entities;
-        if (!list.includes(entity)){
-            list.push(entity);
-            this.setState({entities: list});
-        }
+        list.push(entity);
+        list.filter((v,i) => list.indexOf(v) === i);
+        this.setState({entities: list});
     };
 
     updateInputValue(evt) {
@@ -30,11 +34,22 @@ class App extends React.Component {
     }
 
     camelize(str) {
-        return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function(match, index) {
+        return str.replace(/(?=\b(af|von|van|de|of|zu|du|do|dos|da|das|e)\b)|(?:^\w|[A-Z]|\b\w|\s+|)/g, function(match, index) {
             if (/\s+/.test(match)) return "_";
+
             return match.toUpperCase();
         });
     }
+
+    clearData = () => {
+        this.setState({entities:[]})
+    };
+
+    onKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            this.onFetchData()
+        }
+    };
 
     onFetchData = () => {
         const genericParams = "&property=dbo%3AbirthDate&property=georss:point&pretty=NONE&limit=1&offset=0&key=1234&oldVersion=false";
@@ -74,10 +89,31 @@ class App extends React.Component {
     render() {
         return (
             <div className="mt-5 text-center">
-                <input placeholder="Search for someone" type="text" onChange={evt => this.updateInputValue(evt)}/>
-                <button type="button" onClick={this.onFetchData} className="">
-                    <i className="fas fa-search"/>
-                </button>
+                <Paper style={{
+                    padding: '2px 10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    width: 'auto',
+                    position: 'absolute',
+                    left: '50%',
+                    transform: 'translate(-50%, 0)'
+                }}>
+                    <InputBase
+                        placeholder="Search for someone"
+                        onKeyPress={this.onKeyPress}
+                        type="text" onChange={evt => this.updateInputValue(evt)}
+                    />
+                    <IconButton type="button" onClick={this.onFetchData} aria-label="Search" style={{outline:0}}>
+                        <i className="fas fa-search"/>
+                    </IconButton>
+                    <Divider style={{width: 2, height: 28, margin: 4,}}/>
+                    <Tooltip title="Clear searches">
+                        <IconButton type="button" onClick={this.clearData} aria-label="Search" style={{outline:0}}>
+                            <i className="fas fa-eraser"/>
+                        </IconButton>
+                    </Tooltip>
+                </Paper>
+                <button type="button" onClick={this.clearData} className="ml-5">Clear searches</button>
 
                 <div className="row">
                     {this.state.entities.map(entity => {

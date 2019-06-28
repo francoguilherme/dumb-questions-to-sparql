@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from "axios";
+import {Tooltip, Fab} from "@material-ui/core";
 
 class PersonCard extends React.Component {
 
@@ -66,23 +67,24 @@ class PersonCard extends React.Component {
     render() {
         return (
             <div className="card text-white text-left bg-secondary mt-5 mx-auto mb-3" style={{width: "20rem"}}>
+                <Tooltip title="Search related">
+                    <Fab size="medium" onClick={this.searchRelated} className="bg-info text-white" style={{outline:0, position:"absolute", top:"2px", right:"2px"}}>
+                        <i className="fas fa-search-plus mx-auto" style={{'fontSize':'1.5em'}}/>
+                    </Fab>
+                </Tooltip>
                 {
                     this.props.foafdepiction &&
-                    <img src={this.props.foafdepiction} alt="Depiction" className="card-img-top bg-white"
+                    <img style={{'text-indent': '-10000px'}} src={this.props.foafdepiction} alt="Depiction" className="card-img-top bg-white"
                      style={{"objectFit":"cover", "maxHeight":"20rem", "objectPosition":"top"}}/>
                 }
                 <div className="card-body" style={{"fontSize":"15px"}}>
                     <h5 className="card-title">{this.props.foafname}</h5>
                     <p className="card-text">{this.props.dctdescription}</p>
-                    <p className="card-text">{this.props.dbpnationality}</p>
                     <p className="card-text">Birth: {this.props.dbobirthDate}, {this.birthPlace}</p>
                     {this.props.dbodeathDate && <p className="card-text">Death: {this.props.dbodeathDate}, {this.deathPlace}</p>}
-                    {this.props.dboresidence && <p className="card-text">Residence: {this.residence}</p>}
+                    {this.props.dboresidence && <p className="card-text">Lives in: {this.residence}</p>}
                     {this.props.dboalmaMater && <p className="card-text">Alma Mater: {this.almaMater}</p>}
                     {this.props.dbospouse && <p className="card-text">Spouse: {this.spouse}</p>}
-                </div>
-                <div className="card-footer">
-                    <button onClick={this.searchRelated} className="btn btn-primary">Search related</button>
                 </div>
             </div>
         );
