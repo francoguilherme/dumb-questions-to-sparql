@@ -89,6 +89,9 @@ class App extends React.Component {
     render() {
         return (
             <div className="mt-5 text-center">
+                <h6 style={{fontSize:"60px"}} className="text-white mb-5">
+                    DBpedia Searcher
+                </h6>
                 <Paper style={{
                     padding: '2px 10px',
                     display: 'flex',
