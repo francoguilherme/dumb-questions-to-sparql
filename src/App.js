@@ -90,7 +90,7 @@ class App extends React.Component {
                             })}
                         </div>
                         <Divider light style={{width:"100%", height: 4}}/>
-                        <div className="ml-5 mt-3 text-left text-white">
+                        <div style={{marginLeft:"35%"}} className="mt-3 text-left text-white">
                             <h5>SPARQL Query:</h5>
                             <div style={{display:"block", whiteSpace:"pre-wrap"}}>
                                 {this.state.query}
